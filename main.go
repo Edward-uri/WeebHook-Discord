@@ -1,17 +1,18 @@
 package main
 
 import (
-    "weebhook/infraestructure"
-    "weebhook/infraestructure/routes"
-    "github.com/gin-gonic/gin"
+	"weebhook/infraestructure"
+	"weebhook/infraestructure/routes"
+
+	"github.com/gin-gonic/gin"
 )
 
 func main() {
-    webhookHandler := infraestructure.Init()
+	webhookHandler, reviewHandler := infraestructure.Init()
 
-    router := gin.Default()
+	router := gin.Default()
 
-    routes.Routes(router, webhookHandler)
+	routes.Routes(router, webhookHandler, reviewHandler)
 
-    router.Run(":8080")
+	router.Run(":8080")
 }
