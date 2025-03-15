@@ -29,7 +29,7 @@ jobs:
           run: nohup ./main &
 
         - name: Wait for server to start
-          run: sleep 5
+          run: sleep 15
 
         - name: Verify server is running 
           run: |
