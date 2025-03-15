@@ -6,6 +6,8 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+// rutas de la aplicacion
+// Routes define las rutas de la aplicacion
 func Routes(router *gin.Engine, webhookHandler *controller.WebhookHandler, reviewHandler *controller.ReviewHandler, statusHandler *controller.StatusHandler) {
 	routes := router.Group("pull_request")
 	{
