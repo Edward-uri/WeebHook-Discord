@@ -9,7 +9,7 @@ import (
 	"github.com/joho/godotenv"
 )
 
-func Init() (*controller.WebhookHandler, *controller.ReviewHandler) {
+func Init() (*controller.WebhookHandler, *controller.ReviewHandler, *controller.ActionsHandler) {
 	err := godotenv.Load()
 	if err != nil {
 		panic("Error loading .env file")
@@ -25,5 +25,8 @@ func Init() (*controller.WebhookHandler, *controller.ReviewHandler) {
 	webhookHandler := controller.NewWebhookHandler(*payloadUseCase)
 	reviewHandler := controller.NewReviewHandler(*reviewUseCase)
 
-	return webhookHandler, reviewHandler
+	actionUseCase := application.NewActionUseCase(payloadRepo, discordWebhookURL)
+	actionsHandler := controller.NewActionsHandler(actionUseCase)
+
+	return webhookHandler, reviewHandler, actionsHandler
 }
