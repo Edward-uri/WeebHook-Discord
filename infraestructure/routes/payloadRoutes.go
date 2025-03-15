@@ -6,7 +6,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func Routes(router *gin.Engine, webhookHandler *controller.WebhookHandler, reviewHandler *controller.ReviewHandler) {
+func Routes(router *gin.Engine, webhookHandler *controller.WebhookHandler, reviewHandler *controller.ReviewHandler, statusHandler *controller.StatusHandler) {
 	routes := router.Group("pull_request")
 	{
 		routes.POST("/webhook", webhookHandler.HandlePullRequest)
@@ -16,4 +16,9 @@ func Routes(router *gin.Engine, webhookHandler *controller.WebhookHandler, revie
 	{
 		reviews.POST("/webhook", reviewHandler.HandleReview)
 	}
+	sever := router.Group("server")
+	{
+		sever.GET("/status", statusHandler.GetStatus)
+	}
+
 }
