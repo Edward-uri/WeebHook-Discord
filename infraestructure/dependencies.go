@@ -1,6 +1,7 @@
 package infraestructure
 
 import (
+	"fmt"
 	"os"
 	"weebhook/application"
 	"weebhook/infraestructure/controller"
@@ -12,7 +13,7 @@ import (
 func Init() (*controller.WebhookHandler, *controller.ReviewHandler, *controller.StatusHandler) {
 	err := godotenv.Load()
 	if err != nil {
-		panic("Error loading .env file")
+		fmt.Println("Error loading .env file")
 	}
 
 	payloadRepo := repositories.NewPayloadRepository()

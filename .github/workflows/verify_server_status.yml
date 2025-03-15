@@ -21,7 +21,7 @@ jobs:
           uses: actions/setup-go@v5.3.0
           with:
              go-version: '^1.20'
-
+            
         - name: Build
           run: go build -o main
         
@@ -29,7 +29,7 @@ jobs:
           run: nohup ./main &
 
         - name: Wait for server to start
-          run: sleep 5
+          run: sleep 15
 
         - name: Verify server is running 
           run: |
