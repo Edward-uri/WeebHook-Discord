@@ -8,11 +8,11 @@ import (
 )
 
 func main() {
-	webhookHandler, reviewHandler := infraestructure.Init()
+	webhookHandler, reviewHandler, statusHandler := infraestructure.Init()
 
 	router := gin.Default()
 
-	routes.Routes(router, webhookHandler, reviewHandler)
+	routes.Routes(router, webhookHandler, reviewHandler, statusHandler)
 
 	router.Run(":8080")
 }

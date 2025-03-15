@@ -1,0 +1,66 @@
+name: Verify Server Status
+
+on:
+    pull_request:
+        branches: 
+            - develop
+        types: [opened, reopened, synchronize]
+    push:
+        branches:
+            - develop
+
+jobs:
+    deploy:
+        runs-on: ubuntu-latest
+        
+        steps:
+        - name: Checkout code
+          uses: actions/checkout@v4
+
+        - name: Set to Go
+          uses: actions/setup-go@v5.3.0
+          with:
+             go-version: '^1.20'
+
+        - name: Build
+          run: go build -o main
+        
+        - name: Run Go Server
+          run: nohup ./main &
+
+        - name: Wait for server to start
+          run: sleep 5
+
+        - name: Verify server is running 
+          run: |
+             RESPONSE=$(curl http://localhost:8080/server/status)
+             if echo "$RESPONSE" | grep -q '"status":"OK"'; then
+                 echo "server is running and returned OK"
+             else
+                 echo "Server did not return expected status."
+                 exit 1
+             fi
+        
+        # Nuevo paso para notificar a Discord sobre el resultado
+        - name: Notify Discord on success
+          if: success()
+          uses: sarisia/actions-status-discord@v1
+          with:
+            webhook: ${{secrets.DISCORD_WEBHOOK_URL}}
+            title: "Server Status Verification Executed Successfully"
+            description: "El servidor de WeebHook-Discord está funcionando correctamente"
+            color: 0x2ECC71
+            username: GitHub Actions Bot
+            avatar_url: https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png
+        
+        # Notificar en caso de fallo
+        - name: Notify Discord on failure
+          if: failure()
+          uses: sarisia/actions-status-discord@v1
+          with:
+            webhook: ${{ secrets.DISCORD_WEBHOOK_URL }}
+            title: "Server Status Verification Failed"
+            description: "El servidor de WeebHook-Discord no está funcionando correctamente"
+            color: 0xE74C3C
+            username: GitHub Actions Bot
+            avatar_url: https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png
