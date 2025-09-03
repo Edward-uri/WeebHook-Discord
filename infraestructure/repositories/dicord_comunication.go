@@ -20,7 +20,6 @@ func (r *PayloadRepository) ProcessPullRequestPayload(ctx context.Context, paylo
 }
 
 func (r *PayloadRepository) FormatDiscordMessage(payload entities.PullRequestEventPayload) interface{} {
-	// Mapeo entre acciones de PR y colores para los embeds
 	colorMap := map[string]int{
 		"opened":      5025616,  // Verde
 		"closed":      15158332, // Rojo
@@ -28,13 +27,11 @@ func (r *PayloadRepository) FormatDiscordMessage(payload entities.PullRequestEve
 		"synchronize": 16776960, // Amarillo
 	}
 
-	// Determinar color basado en la acción
 	color, ok := colorMap[payload.Action]
 	if !ok {
-		color = 9807270 // Gris por defecto para acciones no mapeadas
+		color = 9807270
 	}
 
-	// Crear el mensaje con formato de embeds para Discord
 	return map[string]interface{}{
 		"embeds": []map[string]interface{}{
 			{
@@ -75,10 +72,8 @@ func (r *PayloadRepository) SendDiscordNotification(ctx context.Context, webhook
 		return fmt.Errorf("error marshalling discord message: %w", err)
 	}
 
-	// Imprime el payload para depuración
 	fmt.Printf("Sending to Discord: %s\n", string(jsonData))
 
-	// Verificar que no estamos enviando nil o un mensaje vacío
 	if message == nil {
 		return fmt.Errorf("cannot send nil message to Discord")
 	}
@@ -98,7 +93,6 @@ func (r *PayloadRepository) SendDiscordNotification(ctx context.Context, webhook
 	defer resp.Body.Close()
 
 	if resp.StatusCode < 200 || resp.StatusCode > 299 {
-		// Leer el cuerpo de la respuesta para obtener más detalles
 		responseBody := new(bytes.Buffer)
 		_, _ = responseBody.ReadFrom(resp.Body)
 
