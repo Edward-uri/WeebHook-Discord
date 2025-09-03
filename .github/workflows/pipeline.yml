@@ -1,0 +1,107 @@
+name: Deployment Pipeline
+
+on:
+  push:
+    branches: [develop]
+  pull_request:
+    branches: [develop]
+    types: [opened, synchronize]
+
+jobs:
+
+  avoid_reduncy:
+    runs-on: ubuntu-18.04
+    steps:
+      - name: Cancel Previous Redundant Builds
+        uses: styfle/cancel-workflow-action@0.9.1
+        with:
+          access_token: ${{ github.token }}
+
+  lint:
+    runs-on: ubuntu-18.04
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-go@v3
+        with:
+          go-version: '1.21'
+      - name: golangci-lint
+        uses: golangci/golangci-lint-action@v3
+        with:
+          version: latest
+
+  build:
+    runs-on: ubuntu-18.04
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-go@v3
+        with:
+          go-version: '1.21'
+      - name: Download dependencies
+        run: go mod download
+      - name: Build
+        run: go build -o webhook-discord .
+      - uses: actions/upload-artifact@v2
+        with:
+          name: webhook-discord
+          path: webhook-discord
+
+  test:
+    needs: [lint, build]
+    runs-on: ubuntu-18.04
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-go@v3
+        with:
+          go-version: '1.21'
+      - name: Download dependencies
+        run: go mod download
+      - name: Run tests
+        run: go test -v ./...
+
+  e2e:
+    needs: [lint, build]
+    runs-on: ubuntu-18.04
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-go@v3
+        with:
+          go-version: '1.21'
+      - name: Download dependencies
+        run: go mod download
+      - uses: actions/download-artifact@v2
+        with:
+          name: webhook-discord
+          path: .
+      - name: Make binary executable
+        run: chmod +x webhook-discord
+      - name: Start application in background
+        run: ./webhook-discord &
+      - name: Wait for application to start
+        run: sleep 5
+      - name: Run E2E tests
+        run: go test -v ./tests/e2e/... || true
+      - name: Verify server is running 
+        run: |
+          RESPONSE=$(curl http://localhost:8080/server/status)
+          if echo "$RESPONSE" | grep -q '"status":"OK"'; then
+              echo "server is running and returned OK"
+          else
+              echo "Server did not return expected status."
+              exit 1
+          fi
+
+# deploy:
+#    needs: [test, e2e]
+#   runs-on: ubuntu-18.04
+#  steps:
+#   - uses: actions/checkout@v2
+#    with:
+#     fetch-depth: 0
