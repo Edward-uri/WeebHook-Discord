@@ -13,6 +13,6 @@ func main() {
 	router := gin.Default()
 
 	routes.Routes(router, webhookHandler, reviewHandler, statusHandler)
-
+	println("Server running on port 8080")
 	router.Run(":8080")
 }
